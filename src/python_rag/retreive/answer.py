@@ -1,9 +1,12 @@
 from langchain_core.documents import Document
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from pathlib import Path
 
 load_dotenv()
+
+# Chat model that writes the answer from the retrieved chunks.
+CHAT_MODEL = "gpt-5-mini"
 
 
 def get_answer(question: str) -> str:
@@ -23,7 +26,7 @@ def get_answer(question: str) -> str:
         f"Context:\n{context}\n\nQuestion: {question}"
     )
 
-    chat = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+    chat = ChatOpenAI(model=CHAT_MODEL)
     response = chat.invoke(prompt)
     return response.text
 

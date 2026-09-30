@@ -8,7 +8,7 @@ from python_rag.vector_store import get_vector_store
 
 
 def ingest_document(path: str):
-    # Shared Gemini-backed store (see vector_store.py)
+    # Shared vector store (see vector_store.py)
     chroma = get_vector_store()
     document = read_document(path)
 

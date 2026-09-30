@@ -12,3 +12,9 @@ wheels/
 
 # Local Chroma vector database
 .chroma/
+
+# macOS Finder metadata
+.DS_Store
+
+# Source documents to ingest (may be private)
+docs/

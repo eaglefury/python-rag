@@ -1,6 +1,8 @@
 from typing import Dict
 
-import PyPDF2
+# pypdf is the maintained successor to PyPDF2; it also tolerates PDFs with junk
+# before the %PDF header (e.g. HTML injected by download pages), which PyPDF2 cannot open.
+import pypdf
 import os
 from docx import Document
 from pathlib import Path
@@ -16,10 +18,10 @@ def read_txt(file_path: str) -> FileData:
 
 def read_pdf(file_path: str) -> FileData:
     with open(file_path, "rb") as f:
-        reader = PyPDF2.PdfReader(f)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or ""
+        reader = pypdf.PdfReader(f)
+        # Join pages with a newline so the last word of one page isn't glued to
+        # the first word of the next.
+        text = "\n".join(page.extract_text() or "" for page in reader.pages)
         return FileData(content=text, name=Path(file_path).name)
 
 

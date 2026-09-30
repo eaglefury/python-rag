@@ -3,14 +3,15 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import hashlib
 
 from python_rag.types.types import DocumentMetadata
+from python_rag.vector_store import EMBEDDING_ENCODING
 
 
-# Sizes are in characters. gemini-embedding-001 accepts up to 2048 tokens; at
-# roughly 4 characters per token, 3000 characters is ~750 tokens, well under the
-# limit, and in the 512-1024 token range that keeps embeddings topic-focused.
-# Counting exact Gemini tokens would need an API call per chunk, so we don't.
-def chunk_document(text: str, chunk_size: int = 3000, chunk_overlap: int = 400) -> list[str]:
-    text_splitter = RecursiveCharacterTextSplitter(
+# Sizes are in tokens, counted locally with tiktoken using the embedding model's own
+# encoding (no API calls). 800 tokens is far below the model's 8191-token limit and
+# in the 512-1024 range that keeps each embedding focused on one topic.
+def chunk_document(text: str, chunk_size: int = 800, chunk_overlap: int = 100) -> list[str]:
+    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        encoding_name=EMBEDDING_ENCODING,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
