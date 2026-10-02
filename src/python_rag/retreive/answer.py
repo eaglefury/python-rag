@@ -3,7 +3,10 @@ from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv()
+from python_rag.vector_store import ENV_FILE
+
+# ChatOpenAI reads OPENAI_API_KEY from the environment.
+load_dotenv(ENV_FILE)
 
 # Chat model that writes the answer from the retrieved chunks.
 CHAT_MODEL = "gpt-5-mini"

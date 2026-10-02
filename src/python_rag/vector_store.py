@@ -6,9 +6,15 @@ from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 
+# Project root (src/python_rag/vector_store.py -> parents[2]).
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# .env lives in the project root, outside the package, so it is never bundled
+# into a built wheel. Loaded by explicit path: load_dotenv() with no argument
+# searches from the caller's location and misses it in REPLs and notebooks.
+ENV_FILE = PROJECT_ROOT / ".env"
 # OpenAIEmbeddings reads OPENAI_API_KEY from the environment, so load
 # .env here rather than relying on answer.py having been imported first.
-load_dotenv()
+load_dotenv(ENV_FILE)
 
 # Single place for the embedding model: ingestion and retrieval must use the same
 # model, otherwise query vectors are compared against incompatible document vectors.
@@ -16,10 +22,9 @@ load_dotenv()
 EMBEDDING_MODEL = "text-embedding-3-small"
 # Tokenizer used by the text-embedding-3 models; chunk_documents.py sizes chunks with it.
 EMBEDDING_ENCODING = "cl100k_base"
-# Anchored to the project root (src/python_rag/vector_store.py -> parents[2]) rather
-# than the current working directory, so ingest and retrieval always use the same
-# database no matter where the command is run from. CHROMA_DIR overrides it.
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Anchored to the project root rather than the current working directory, so
+# ingest and retrieval always use the same database no matter where the command
+# is run from. CHROMA_DIR overrides it.
 PERSIST_DIRECTORY = str(
     Path(os.getenv("CHROMA_DIR", PROJECT_ROOT / ".chroma")).expanduser().resolve())
 
