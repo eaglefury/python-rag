@@ -2,20 +2,12 @@ from python_rag.ingest.ingest_document import ingest_document
 from python_rag.retreive.retreive_chunks import get_documents
 
 
-def multi_chunk_text(sections: int = 12) -> str:
-    """Text long enough to split into several 800-token chunks."""
-    return "\n\n".join(
-        f"Topic {i}: instructions for feature {i}, step {i * 2}, setting {i * 5}. " * 30
-        for i in range(sections)
-    )
-
-
 def stored(store) -> dict:
     return store.get(include=["documents", "metadatas"])
 
 
-def test_ingest_stores_chunks_with_metadata(fake_vector_store, make_txt):
-    ingest_document(make_txt(multi_chunk_text(), name="guide.txt"))
+def test_ingest_stores_chunks_with_metadata(fake_vector_store, data_file):
+    ingest_document(data_file("guide.txt"))  # long enough for several chunks
 
     data = stored(fake_vector_store)
     assert len(data["ids"]) > 1
@@ -23,9 +15,9 @@ def test_ingest_stores_chunks_with_metadata(fake_vector_store, make_txt):
     assert {m["tag"] for m in data["metadatas"]} == {".txt"}
 
 
-def test_reingesting_same_file_does_not_duplicate(fake_vector_store, make_txt):
+def test_reingesting_same_file_does_not_duplicate(fake_vector_store, data_file):
     # Regression: chunks used to get random IDs, so every ingest added copies.
-    path = make_txt(multi_chunk_text())
+    path = data_file("guide.txt")
 
     ingest_document(path)
     first_ids = stored(fake_vector_store)["ids"]
@@ -34,16 +26,16 @@ def test_reingesting_same_file_does_not_duplicate(fake_vector_store, make_txt):
     assert sorted(stored(fake_vector_store)["ids"]) == sorted(first_ids)
 
 
-def test_ingests_pdf(fake_vector_store, make_pdf):
-    ingest_document(make_pdf(["Press ZOOM during playback."], name="manual.pdf"))
+def test_ingests_pdf(fake_vector_store, data_file):
+    ingest_document(data_file("manual.pdf"))
 
     data = stored(fake_vector_store)
     assert data["metadatas"][0]["source"] == "manual.pdf"
-    assert "Press ZOOM during playback." in data["documents"][0]
+    assert "The region number of this player is 2." in data["documents"][0]
 
 
-def test_query_matching_a_chunk_returns_it_first(fake_vector_store, make_txt):
-    ingest_document(make_txt(multi_chunk_text(), name="guide.txt"))
+def test_query_matching_a_chunk_returns_it_first(fake_vector_store, data_file):
+    ingest_document(data_file("guide.txt"))
     target = stored(fake_vector_store)["documents"][3]
 
     results = get_documents(target, top_k=1)
@@ -53,8 +45,8 @@ def test_query_matching_a_chunk_returns_it_first(fake_vector_store, make_txt):
     assert results[0].metadata["source"] == "guide.txt"
 
 
-def test_top_k_limits_number_of_results(fake_vector_store, make_txt):
-    ingest_document(make_txt(multi_chunk_text()))
+def test_top_k_limits_number_of_results(fake_vector_store, data_file):
+    ingest_document(data_file("guide.txt"))
 
     assert len(get_documents("feature", top_k=2)) == 2
 

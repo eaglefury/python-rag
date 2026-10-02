@@ -36,8 +36,8 @@ def asked(monkeypatch):
 
 
 @pytest.mark.parametrize("command", ["ingest", "INGEST"])
-def test_ingest_existing_file(run_cli, ingested, make_txt, command):
-    path = make_txt("text")
+def test_ingest_existing_file(run_cli, ingested, data_file, command):
+    path = data_file("notes.txt")
 
     run_cli(command, path)
 

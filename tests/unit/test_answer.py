@@ -71,12 +71,13 @@ def test_get_answer_prints_retrieved_count_and_returns_text(fake_chat, fixed_ret
     assert "Retrieved 2 documents" in capsys.readouterr().out
 
 
-def test_end_to_end_offline(fake_chat, fake_vector_store, make_txt):
+def test_end_to_end_offline(fake_chat, fake_vector_store, data_file):
     # Real ingest + retrieval (fake embeddings), stubbed LLM: the ingested text
     # must reach the prompt.
-    ingest_document(make_txt("The screen saver starts after 20 minutes.", name="m.txt"))
+    ingest_document(data_file("manual.pdf"))
+    chunk = fake_vector_store.get()["documents"][0]
 
-    _, documents = answer_with_context("The screen saver starts after 20 minutes.")
+    _, documents = answer_with_context(chunk)  # fake embeddings match identical text
 
-    assert documents[0].page_content == "The screen saver starts after 20 minutes."
-    assert "The screen saver starts after 20 minutes." in fake_chat[0]["prompt"]
+    assert documents[0].page_content == chunk
+    assert "The region number of this player is 2." in fake_chat[0]["prompt"]
