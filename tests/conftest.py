@@ -62,6 +62,27 @@ def build_pdf(pages: list[str], xref_stream: bool = False) -> bytes:
 
 
 @pytest.fixture
+def fake_vector_store(tmp_path: Path, monkeypatch):
+    """A real Chroma store in tmp_path with offline fake embeddings.
+
+    DeterministicFakeEmbedding gives the same vector for the same text, so a
+    query equal to a stored chunk finds that chunk first; no API key needed.
+    Patched at both import sites because each module imports the name directly.
+    """
+    from langchain_chroma import Chroma
+    from langchain_core.embeddings import DeterministicFakeEmbedding
+
+    store = Chroma(
+        collection_name="test",
+        embedding_function=DeterministicFakeEmbedding(size=64),
+        persist_directory=str(tmp_path / "chroma"),
+    )
+    monkeypatch.setattr("python_rag.ingest.ingest_document.get_vector_store", lambda: store)
+    monkeypatch.setattr("python_rag.retreive.retreive_chunks.get_vector_store", lambda: store)
+    return store
+
+
+@pytest.fixture
 def make_pdf(tmp_path: Path):
     """Factory: write a PDF to tmp_path and return its path as a str.
 
