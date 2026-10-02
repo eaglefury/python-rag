@@ -28,13 +28,15 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "deepeval>=4.2.7",
     "pytest>=9.1.1",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "eval: LLM-judged quality evals; call OpenAI and cost money (run with: pytest -m eval)",
+    "eval: cheap evals with no LLM judge; call OpenAI for the app's own answers (pytest -m eval)",
+    "eval_judge: LLM-judged evals; paid judge calls, run deliberately (pytest -m eval_judge)",
 ]
-# Plain `pytest` runs only the free, offline tests; `pytest -m eval` overrides this.
-addopts = "-m 'not eval'"
+# Plain `pytest` runs only the free, offline tests; `-m eval` / `-m eval_judge` override this.
+addopts = "-m 'not eval and not eval_judge'"

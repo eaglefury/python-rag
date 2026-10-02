@@ -18,3 +18,6 @@ wheels/
 
 # Source documents to ingest (may be private)
 docs/
+
+# DeepEval run caches
+.deepeval/
